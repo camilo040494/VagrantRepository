@@ -16,9 +16,9 @@
           ":id": "wls-listen"
         }
       ],
-      ":memory": 2048
+      ":memory": 1024
     },
-    "slave1": {
+    "lsave1": {
       ":node": "Slave1",
       ":ip": "192.168.33.31",
       ":host": "dbs.server-301",
@@ -39,10 +39,10 @@
           ":id": "xe-listen"
         }
       ],
-      ":memory": 2048
+      ":memory": 1024
     },
-    "web": {
-      ":node": "WebServer-401",
+    "slave2": {
+      ":node": "Slave2",
       ":ip": "192.168.33.41",
       ":host": "web.server-401",
       "ports": [
