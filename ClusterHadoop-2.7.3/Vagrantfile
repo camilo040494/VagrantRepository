@@ -1,0 +1,59 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Multi-VM Configuration: a hadoop cluster using JSON config file
+# Configures VMs based on Hosted Chef Server defined Environment and Node (vs. Roles)
+# Author: Camilo Pimienta Rosero
+
+# read vm and chef configurations from JSON files
+nodes_config = (JSON.parse(File.read("nodes.json")))['nodes']
+
+Vagrant.require_plugin "vagrant-omnibus"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+
+  nodes_config.each do |node|
+    node_name   = node[0] # name of node
+    node_values = node[1] # content of node
+
+    config.vm.define node_name, autostart: false do |config|    
+      # configures all forwarding ports in JSON array
+      ports = node_values['ports']
+      ports.each do |port|
+        config.vm.network :forwarded_port,
+          host:  port[':host'],
+          guest: port[':guest'],
+          id:    port[':id']
+      end
+	  
+	  config.vm.provision "shell", path: "provision.sh"
+      config.vm.hostname = node_values[':node']
+      config.vm.network :private_network, ip: node_values[':ip']
+
+      # syncs local repository of large third-party installer files (quicker than downloading each time) /hadoop /puede ser git y el rpm de java
+      config.vm.synced_folder "#{ENV['HOME']}/Documents/git_repos/chef-artifacts", "/vagrant"
+
+      config.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", node_values[':memory']]
+        vb.customize ["modifyvm", :id, "--name", node_values[':node']]
+      end
+	  
+	  config.vm.provision "file", source: "~/hadoop-2.7.3", destination: "/remote/newlocation/hadoop"
+	
+	#orderging
+	#https://github.com/aaronlord/vagrant/blob/master/Vagrantfile
+	#https://github.com/rgl/jenkins-vagrant/blob/master/Vagrantfile
+	
+	
+	#https://github.com/hashicorp/vagrant/issues/7015 environment variables
+	#https://mlafeldt.github.io/blog/system-provisioning-with-vagrant/
+	#https://stackoverflow.com/questions/40270391/shell-environment-variables-in-vagrant-files-are-only-passed-on-first-up
+	#https://stackoverflow.com/questions/19648088/pass-environment-variables-to-vagrant-shell-provisioner
+    # chef configuration section
+    end
+  end
+end
+
+
+
