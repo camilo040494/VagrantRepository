@@ -18,7 +18,7 @@
       ],
       ":memory": 1024
     },
-    "lsave1": {
+    "save1": {
       ":node": "Slave1",
       ":ip": "192.168.33.31",
       ":host": "dbs.server-301",
