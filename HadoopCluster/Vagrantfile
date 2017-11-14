@@ -17,7 +17,8 @@ Vagrant.configure("2") do |config|
     node_name   = node[0] # name of node
     node_values = node[1] # content of node
 
-    config.vm.define node_name, autostart: false do |config|    
+    #config.vm.define node_name, autostart: false do |config|    
+    config.vm.define node_name do |config|    
       # configures all forwarding ports in JSON array
       ports = node_values['ports']
       ports.each do |port|
@@ -26,20 +27,34 @@ Vagrant.configure("2") do |config|
           guest: port[':guest'],
           id:    port[':id']
       end
-	  
-	  config.vm.provision "shell", path: "provision.sh"
-      config.vm.hostname = node_values[':node']
-      config.vm.network :private_network, ip: node_values[':ip']
+    end
+
+    #node_ip = node_values[':ip']
+    
+    config.vm.provision "shell", inline: "host.sh", args: [node_values[':ip'], node_name]
+
+    if node_values['isMaster']=true then
+      config.vm.provision "shell", path: "public-key.sh"
+    end
+
+	  #config.vm.provision "shell", path: "provision.sh"
+    config.vm.hostname = node_values[':node']
+    config.vm.network :private_network, ip: node_values[':ip']
 
       # syncs local repository of large third-party installer files (quicker than downloading each time) /hadoop /puede ser git y el rpm de java
-      config.vm.synced_folder "#{ENV['HOME']}/Documents/git_repos/chef-artifacts", "/vagrant"
+      #config.vm.synced_folder "#{ENV['HOME']}/Documents/git_repos/chef-artifacts", "/vagrant"
 
-      config.vm.provider :virtualbox do |vb|
-        vb.customize ["modifyvm", :id, "--memory", node_values[':memory']]
-        vb.customize ["modifyvm", :id, "--name", node_values[':node']]
-      end
+    config.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", node_values[':memory']]
+      vb.customize ["modifyvm", :id, "--name", node_values[':node']]
+    end
 	  
-	  config.vm.provision "file", source: "~/hadoop-2.7.3", destination: "/remote/newlocation/hadoop"
+
+    config.trigger.after :up, :vm => ['master','slave1'] do
+      run "sudo cat /home/vagrant/host_list >> etc/hosts"
+      run "ssh-keyscan master | sort -u | grep ssh-rsa | awk '{ $2 \" \" $3 \" vagrant@\" $1}' >> .ssh/authorized_keys"
+    end
+	#  config.vm.provision "file", source: "~/hadoop-2.7.3", destination: "/remote/newlocation/hadoop"
 	
 	#orderging
 	#https://github.com/aaronlord/vagrant/blob/master/Vagrantfile
@@ -51,9 +66,5 @@ Vagrant.configure("2") do |config|
 	#https://stackoverflow.com/questions/40270391/shell-environment-variables-in-vagrant-files-are-only-passed-on-first-up
 	#https://stackoverflow.com/questions/19648088/pass-environment-variables-to-vagrant-shell-provisioner
     # chef configuration section
-    end
   end
 end
-
-
-

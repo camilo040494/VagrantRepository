@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 #On master
-ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+sudo -u vagrant ssh-keygen -f /home/vagrant/.ssh/id_rsa -t rsa -N ''
