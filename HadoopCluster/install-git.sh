@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
-sudo apt-get update 
-sudo apt-get -y install git
+echo "Installing git"
+#sudo apt-get update 
+sudo yum install -y git
+echo "Installation of git complete"

@@ -28,12 +28,17 @@ Vagrant.configure("2") do |config|
           id:    port[':id']
       end
       if node_values[':isMaster']=="true" then
-        machine.vm.provision "shell", path: "public-key.sh"
-        ip = node_values[':ip']
+        #machine.vm.provision "shell", path: "public-key.sh"
+        #machine.vm.provision "shell", path: "install-sshpass.sh"
+        machine.vm.provision "shell", path: "install-java.sh"
+        machine.vm.provision "shell", path: "install-maven.sh"
+        #ip = node_values[':ip']
+      else
+        #machine.vm.provision "shell", path: "install-git.sh"
       end
       machine.vm.hostname = node_values[':node']
       machine.vm.network :private_network, ip: node_values[':ip']
-      machine.vm.provision "shell", path: "install-key.sh", args: ip
+      #machine.vm.provision "shell", path: "install-key.sh", args: ip
 
 
     #node_ip = node_values[':ip']
