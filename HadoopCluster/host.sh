@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
-touch /home/vagrant/host_list
-echo -e "$1\t$2" >> /home/vagrant/host_list
+echo "creating hostfile"
+sudo -u vagrant touch /home/vagrant/host_list
+sudo -u vagrant echo -e "$1\t$2" >> /home/vagrant/host_list

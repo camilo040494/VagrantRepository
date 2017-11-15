@@ -2,8 +2,8 @@
   "nodes": {
     "master": {
       ":node": "master",
-      ":ip": "192.168.1.71",
-      ":host": "master",
+      ":ip": "192.168.2.71",
+      ":host": "hadoop_master",
       ":isMaster" : "true",
       "ports": [
         {
@@ -14,10 +14,10 @@
       ],
       ":memory": 1024
     },
-    "save1": {
+    "slave1": {
       ":node": "slave1",
-      ":ip": "192.168.1.72",
-      ":host": "slave1",
+      ":ip": "192.168.2.72",
+      ":host": "hadoop_slave1",
       ":isMaster" : "false",
       "ports": [
         {
