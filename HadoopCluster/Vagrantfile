@@ -10,8 +10,9 @@ nodes_config = (JSON.parse(File.read("nodes.json")))['nodes']
 hosts = Hash.new
 nodes_config.each do |temp_node|
     node_values = temp_node[1]
-    #hosts.merge!(node_values[':host'])
-    hosts[node_values[':host']] = node_values['ip']
+    ip = nodes_values[":ip"]
+    hostname = nodes_values[":hostname"]
+    hosts[hostname] = ip
 end
 
 #Vagrant.require_plugin "vagrant-omnibus"
@@ -43,9 +44,9 @@ Vagrant.configure("2") do |config|
 
       #deleting first lines in hosts https://stackoverflow.com/questions/2112469/delete-specific-line-numbers-from-a-text-file-using-sed
       #https://ruby-doc.org/core-2.1.4/Hash.html
-      hosts.each do |key|
-        machine.vm.provision "shell", path: "host.sh", args: ["#{hosts[key]}", "#{key}"]
-      end
+      hosts.each { |hostname, ip|
+        machine.vm.provision "shell", path: "host.sh", args: ["#{ip}", "#{hostname}"]
+      }
 
       if node_values[':isMaster']=="true" then
         #machine.vm.provision "shell", path: "install-sshpass.sh"
