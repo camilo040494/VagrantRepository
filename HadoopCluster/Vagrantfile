@@ -8,12 +8,12 @@
 # read vm and chef configurations from JSON files
 nodes_config = (JSON.parse(File.read("nodes.json")))['nodes']
 hosts = Hash.new
-nodes_config.each do |temp_node|
+nodes_config.each { |temp_node|
     node_values = temp_node[1]
     ip = nodes_values[":ip"]
     hostname = nodes_values[":hostname"]
     hosts[hostname] = ip
-end
+}
 
 #Vagrant.require_plugin "vagrant-omnibus"
 #ip = "127.0.0.1"
