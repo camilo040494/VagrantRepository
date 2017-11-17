@@ -7,9 +7,15 @@
 
 # read vm and chef configurations from JSON files
 nodes_config = (JSON.parse(File.read("nodes.json")))['nodes']
+hosts = Hash.new
+nodes_config.each do |temp_node|
+    node_values = temp_node[1]
+    #hosts.merge!(node_values[':host'])
+    hosts[node_values[':host']] = node_values['ip']
+end
 
 #Vagrant.require_plugin "vagrant-omnibus"
-ip = "127.0.0.1"
+#ip = "127.0.0.1"
 Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
 
@@ -27,23 +33,41 @@ Vagrant.configure("2") do |config|
           guest: port[':guest'],
           id:    port[':id']
       end
-      if node_values[':isMaster']=="true" then
-        #machine.vm.provision "shell", path: "public-key.sh"
-        #machine.vm.provision "shell", path: "install-sshpass.sh"
-        machine.vm.provision "shell", path: "install-java.sh"
-        machine.vm.provision "shell", path: "install-maven.sh"
-        #ip = node_values[':ip']
-      else
-        #machine.vm.provision "shell", path: "install-git.sh"
-      end
+
       machine.vm.hostname = node_values[':node']
       machine.vm.network :private_network, ip: node_values[':ip']
+      machine.vm.provider :virtualbox do |vb|
+        vb.customize ["modifyvm", :id, "--memory", node_values[':memory']]
+        vb.customize ["modifyvm", :id, "--name", node_values[':node']]
+      end
+
+      #deleting first lines in hosts https://stackoverflow.com/questions/2112469/delete-specific-line-numbers-from-a-text-file-using-sed
+      #https://ruby-doc.org/core-2.1.4/Hash.html
+      hosts.each do |key|
+        machine.vm.provision "shell", path: "host.sh", args: ["#{hosts[key]}", "#{key}"]
+      end
+
+      if node_values[':isMaster']=="true" then
+        #machine.vm.provision "shell", path: "install-sshpass.sh"
+        machine.vm.provision "shell", path: "public-key.sh"
+        #machine.vm.provision "shell", path: "install-java.sh"
+        #machine.vm.provision "shell", path: "install-maven.sh"
+        #machine.vm.provision "shell", path: "install-git.sh"
+      else
+        #RSAAuthentication yes
+        #sudo sed -i -e "\\#PasswordAuthentication no# s#PasswordAuthentication no#PasswordAuthentication yes#g" /etc/ssh/sshd_config
+        #sudo sed -i -e "\\#PubkeyAuthentication yes# s/\\#PubkeyAuthentication yes/PubkeyAuthentication yes/g" /etc/ssh/sshd_config
+        #http://ermaker.github.io/blog/2015/11/18/change-insecure-key-to-my-own-key-on-vagrant.html
+        config.vm.provision "shell", inline: <<-EOC
+        echo "Configuring ssh properties"
+        sudo sed -i -e "\\#PasswordAuthentication no# s#PasswordAuthentication no#PasswordAuthentication yes#g" /etc/ssh/sshd_config
+        sudo echo "RSAAuthentication yes" >> /etc/ssh/sshd_config
+        sudo systemctl restart sshd.service
+        echo "Configured ssh properties"
+        EOC
+      end
+
       #machine.vm.provision "shell", path: "install-key.sh", args: ip
-
-
-    #node_ip = node_values[':ip']
-    
-    #node.vm.provision "shell", inline: "host.sh", args: [node_values[':ip'], node_name]
 
 	  #config.vm.provision "shell", path: "provision.sh"
     
@@ -51,16 +75,13 @@ Vagrant.configure("2") do |config|
       # syncs local repository of large third-party installer files (quicker than downloading each time) /hadoop /puede ser git y el rpm de java
       #config.vm.synced_folder "#{ENV['HOME']}/Documents/git_repos/chef-artifacts", "/vagrant"
 
-      machine.vm.provider :virtualbox do |vb|
-        vb.customize ["modifyvm", :id, "--memory", node_values[':memory']]
-        vb.customize ["modifyvm", :id, "--name", node_values[':node']]
-      end
+      
 	  
 
     #config.trigger.after :up, :vm => ['master','slave1'] do
-    #  run "sudo cat /home/vagrant/host_list >> etc/hosts"
     #  run "ssh-keyscan master | sort -u | grep ssh-rsa | awk '{ $2 \" \" $3 \" vagrant@\" $1}' >> .ssh/authorized_keys"
     #end
+
 	#  config.vm.provision "file", source: "~/hadoop-2.7.3", destination: "/remote/newlocation/hadoop"
 	
 	#orderging
