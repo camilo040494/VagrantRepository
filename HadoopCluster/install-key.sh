@@ -2,6 +2,8 @@
 
 #On master
 
-sshpass -p "vagrant" ssh-copy-id -o StrictHostKeyChecking=no vagrant@192.168.2.72
+for i in `cat /etc/hosts | tail -n +4  | awk '{print $2}'`; do sudo -u vagrant sshpass -p "vagrant" sudo -u vagrant ssh-copy-id -o StrictHostKeyChecking=no vagrant@$i;
+done
+
 #NODE_MASTER=$1
 #ssh-keyscan -t rsa $NODE_MASTER | awk '{print $2 " " $3 " vagrant@" $1}' >> .ssh/known_hosts
