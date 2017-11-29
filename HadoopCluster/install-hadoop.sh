@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 echo "Installing Hadoop"
 
-echo "Downloading binaries"
-
-curl -O -L https://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz
-echo "Download ended"
+HADOOP_BIN=$(ls /vagrant/hadoop-2.7.3.tar.gz | head -n +1)
+if [ -z $HADOOP_BIN ]; then
+ echo "Downloading binaries"
+ curl -O -L https://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz
+ echo "Download ended"
+else
+ echo "Binaries found, proceding to installing it"
+ cp $HADOOP_BIN /home/vagrant/
+fi
 
 sudo tar -xzvf hadoop-2.7.3.tar.gz -C /usr/lib
 sudo touch /etc/profile.d/hadoop.sh
