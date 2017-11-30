@@ -1,21 +1,33 @@
 #!/usr/bin/env bash
 echo "Installing Hadoop"
 
-echo "Downloading binaries"
-
-curl -O -L https://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz
-echo "Download ended"
+HADOOP_BIN=$(ls /vagrant/hadoop-2.7.3.tar.gz | head -n +1)
+if [ -z $HADOOP_BIN ]; then
+ echo "Downloading binaries"
+ curl -O -L https://archive.apache.org/dist/hadoop/core/hadoop-2.7.3/hadoop-2.7.3.tar.gz
+ echo "Download ended"
+else
+ echo "Binaries found, proceding to installing it"
+ cp $HADOOP_BIN /home/vagrant/
+fi
 
 sudo tar -xzvf hadoop-2.7.3.tar.gz -C /usr/lib
 sudo touch /etc/profile.d/hadoop.sh
 sudo cat >/etc/profile.d/hadoop.sh <<EOL
-export HADOOP_COMMON_HOME=/usr/lib/hadoop-2.7.3
-export HADOOP_MAPRED_HOME=$HADOOP_COMMON_HOME
-export HADOOP_HDFS_HOME=$HADOOP_COMMON_HOME
-export YARN_HOME=$HADOOP_COMMON_HOME
+HADOOP_COMMON_HOME=/usr/lib/hadoop-2.7.3
+HADOOP_MAPRED_HOME=$HADOOP_COMMON_HOME
+HADOOP_HDFS_HOME=$HADOOP_COMMON_HOME
+YARN_HOME=$HADOOP_COMMON_HOME
+PATH=$PATH:$HADOOP_COMMON_HOME/bin
+PATH=$PATH:$HADOOP_COMMON_HOME/sbin
+HADOOP_PREFIX=$HADOOP_COMMON_HOME
+
+export HADOOP_COMMON_HOME
+export HADOOP_MAPRED_HOME
+export HADOOP_HDFS_HOME
+export YARN_HOME
+export HADOOP_PREFIX
 export PATH=$PATH:$HADOOP_COMMON_HOME/bin
-export PATH=$PATH:$HADOOP_COMMON_HOME/sbin
-export HADOOP_PREFIX=$HADOOP_COMMON_HOME
 EOL
 
 sudo source /etc/profile.d/eketal.sh
