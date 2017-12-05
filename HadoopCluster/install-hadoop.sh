@@ -11,47 +11,48 @@ else
  cp $HADOOP_BIN /home/vagrant/
 fi
 
-sudo tar -xzvf hadoop-2.7.3.tar.gz -C /usr/lib
+sudo tar -xzvf hadoop-2.7.3.tar.gz -C /home/vagrant
+sudo mv /home/vagrant/hadoop-2.7.3 /home/vagrant/hadoop
 sudo touch /etc/profile.d/hadoop.sh
 sudo cat >/etc/profile.d/hadoop.sh <<EOL
-HADOOP_COMMON_HOME=/usr/lib/hadoop-2.7.3
-HADOOP_MAPRED_HOME=$HADOOP_COMMON_HOME
-HADOOP_HDFS_HOME=$HADOOP_COMMON_HOME
-YARN_HOME=$HADOOP_COMMON_HOME
-PATH=$PATH:$HADOOP_COMMON_HOME/bin
-PATH=$PATH:$HADOOP_COMMON_HOME/sbin
-HADOOP_PREFIX=$HADOOP_COMMON_HOME
+HADOOP_COMMON_HOME=/home/vagrant/hadoop
+HADOOP_MAPRED_HOME=\$HADOOP_COMMON_HOME
+HADOOP_HDFS_HOME=\$HADOOP_COMMON_HOME
+YARN_HOME=\$HADOOP_COMMON_HOME
+HADOOP_PREFIX=\$HADOOP_COMMON_HOME
 
 export HADOOP_COMMON_HOME
 export HADOOP_MAPRED_HOME
 export HADOOP_HDFS_HOME
 export YARN_HOME
 export HADOOP_PREFIX
-export PATH=$PATH:$HADOOP_COMMON_HOME/bin
+export PATH=\$PATH:\$HADOOP_COMMON_HOME/bin:\${HADOOP_COMMON_HOME}/sbin
 EOL
 
-sudo source /etc/profile.d/eketal.sh
-sudo source /etc/profile.d/hadoop.sh
+source /etc/profile.d/eketal.sh
+source /etc/profile.d/hadoop.sh
 
 #Cuando tail -n es igual a 4 incluye el master, cuando es 5 no lo incluye al master
-cat /etc/hosts | tail -n +4  | awk '{print $2}' >> $HADOOP_COMMON_HOME/etc/hadoop/slaves
+cat /etc/hosts | tail -n +4  | awk '{print $2}' > $HADOOP_COMMON_HOME/etc/hadoop/slaves
 #for i in `cat /etc/hosts | tail -n +4  | awk '{print $2}'`; do sudo echo -e $1 >> $HADOOP_COMMON_HOME/etc/hadoop/slaves
 #done
 
 cd /home/vagrant/hadoop-rel-release-2.7.3
 cp hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/target/*.jar $HADOOP_COMMON_HOME/share/hadoop/yarn
-cd .m2/repository/repository/
+
+cd /root/.m2/repository/
 cp dk/brics/automaton/automaton/1.11-8/*.jar $HADOOP_COMMON_HOME/share/hadoop/yarn/lib
 cp org/aspectj/aspectjrt/1.8.9/*.jar $HADOOP_COMMON_HOME/share/hadoop/yarn/lib
 cp org/jgroups/jgroups/3.6.14.Final/*.jar $HADOOP_COMMON_HOME/share/hadoop/yarn/lib
-cp $EKETAL_HOME/co.edu.icesi.eketal.lib/target/*jar $HADOOP_COMMON_HOME/share/hadoop/yarn/lib
+#cp co/edu/icesi/eketal/co.edu.icesi.eketal.lib/2.0.1-SNAPSHOT/*.jar $HADOOP_COMMON_HOME/share/hadoop/yarn/lib
+cp $EKETAL_HOME/co.edu.icesi.eketal.parent-master/co.edu.icesi.eketal.lib/target/*jar $HADOOP_COMMON_HOME/share/hadoop/yarn/lib
 
-#################
-#Falta los demas archivos del $HADOOP_COMMON_HOME/etc/hadoop/
-#################
+cp /vagrant/default-config-files/* $HADOOP_COMMON_HOME/etc/hadoop
+
+#sudo chmod -R 777 /usr/lib/hadoop
 
 exec 3>&1 1>~/logs
-for i in `cat ${HADOOP_COMMON_HOME}/etc/hadoop/slaves | head -n -1`; do echo $i; rsync -avxP --exclude=logs $HADOOP_COMMON_HOME/ $i:/usr/lib/hadoop/;
+for i in `cat ${HADOOP_COMMON_HOME}/etc/hadoop/slaves | head -n -1`; do echo $i; sudo -u vagrant rsync -avxP --exclude=logs $HADOOP_COMMON_HOME/ $i:/home/vagrant/hadoop/; cat /etc/profile.d/hadoop.sh | ssh slave1 "touch hadoop.sh && cat > hadoop.sh && sudo mv hadoop.sh /etc/profile.d"
 done
 exec 1>&3 3>&-;
 

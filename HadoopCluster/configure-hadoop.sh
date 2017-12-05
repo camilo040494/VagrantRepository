@@ -5,7 +5,7 @@
 #apt-get upgrade
 #apt-get install -y gcc g++
 echo "Installing C and C++ compilers"
-sudo yum update -y
+#sudo yum update -y
 sudo yum install -y gcc gcc-c++
 
 #yum install -y wget
@@ -24,11 +24,14 @@ fi
 sudo tar -xzvf protobuf-2.5.0.tar.gz
 cd protobuf-2.5.0
 echo "Building Protocolbuffer"
-sudo ./configure
-sudo make
-sudo make check
-sudo make install
+./configure
+make
+make check
+make install
+sudo touch /etc/profile.d/protoc.sh
+sudo echo "export PATH=$PATH:/usr/local/bin" >> /etc/profile.d/protoc.sh
 echo "Built of Protocolbuffer successfully ended"
+source /etc/profile.d/protoc.sh
 
 #cp jars
 #cp eketal file y pom
@@ -48,7 +51,7 @@ cd /home/vagrant
 sudo tar -xzvf release-2.7.3.tar.gz
 cd hadoop-rel-release-2.7.3
 
-#If retorna algo, unalias,sino siga igual
+#If retorna algo, unalias, sino siga igual
 
 CP_VAR=$(sudo which cp | grep "cp -i")
 if [ ! -z $CP_VAR ]; then
@@ -63,6 +66,6 @@ sudo cp /vagrant/NodeManager.eketal hadoop-yarn-project/hadoop-yarn/hadoop-yarn-
 
 
 echo "Building required jars from sources"
-sudo mvn clean package -DskipTests=true
+mvn clean package -DskipTests=true
 
 echo "Built of sources successfully ended"
