@@ -51,7 +51,7 @@ Vagrant.configure("2") do |config|
       }
 
       config.vm.provision "shell",
-        inline: “sudo yum update -y"
+        inline: "sudo yum update -y"
       config.vm.provision "shell", path: "install-java.sh"
 		
       if node_values[':isMaster']=="true" then
